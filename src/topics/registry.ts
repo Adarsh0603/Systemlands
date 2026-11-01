@@ -45,6 +45,9 @@ import { CHAPTERS as PUBSUB_CHAPTERS } from './pubsub/chapters'
 import PubsubPlay from './pubsub/Play'
 import { REFERENCE as PUBSUB_REFERENCE } from './pubsub/reference'
 import { ADVANCED as LOAD_BALANCING_CARDS, INTERVIEW as LOAD_BALANCING_INTERVIEW } from './load-balancing/reference'
+import { CHAPTERS as PRESENCE_CHAPTERS } from './presence/chapters'
+import PresencePlay from './presence/Play'
+import { REFERENCE as PRESENCE_REFERENCE } from './presence/reference'
 import { CHAPTERS as REAL_TIME_CHAPTERS } from './real-time/chapters'
 import RealTimePlay from './real-time/Play'
 import { REFERENCE as REAL_TIME_REFERENCE } from './real-time/reference'
@@ -80,6 +83,9 @@ import { RIDE_SHARING } from './ride-sharing/build'
 import { REFERENCE as RIDE_SHARING_REFERENCE } from './ride-sharing/reference'
 import DropboxPlay from './dropbox/Play'
 import { DROPBOX } from './dropbox/build'
+import WhatsappPlay from './whatsapp/Play'
+import { WHATSAPP } from './whatsapp/build'
+import { REFERENCE as WHATSAPP_REFERENCE } from './whatsapp/reference'
 import { REFERENCE as DROPBOX_REFERENCE } from './dropbox/reference'
 import YoutubePlay from './youtube/Play'
 import { YOUTUBE } from './youtube/build'
@@ -313,6 +319,17 @@ export const TOPICS: TopicEntry[] = [
     reference: REAL_TIME_REFERENCE,
   },
   {
+    id: 'presence',
+    title: 'Presence',
+    short: 'Presence',
+    track: 'async',
+    pitch: 'Show who is online without flooding the server.',
+    chapters: PRESENCE_CHAPTERS.map((c) => c.title),
+    challenges: challengeIds(PRESENCE_CHAPTERS),
+    Play: PresencePlay,
+    reference: PRESENCE_REFERENCE,
+  },
+  {
     id: 'adaptive-streaming',
     title: 'Adaptive streaming',
     short: 'Streaming',
@@ -487,6 +504,16 @@ export const TOPICS: TopicEntry[] = [
     challenges: ['0:0', '1:0', '2:0'],
     Play: DropboxPlay,
     reference: DROPBOX_REFERENCE,
+  },
+  {
+    id: 'whatsapp',
+    title: 'WhatsApp',
+    track: 'capstones',
+    pitch: 'Deliver a hundred billion messages a day, even to phones that are off.',
+    chapters: [...WHATSAPP.stages],
+    challenges: ['0:0', '1:0', '2:0'],
+    Play: WhatsappPlay,
+    reference: WHATSAPP_REFERENCE,
   },
 ]
 

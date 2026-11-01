@@ -35,6 +35,7 @@ const THUMBS: Record<string, Spot[]> = {
   "twitter-timeline": [["cache", -1.2, 0.7], ["queue", 0.1, -0.7], ["database", 1.3, 0.5]],
   youtube: [["queue", -1.3, -0.6], ["cache", 0.1, 0.7], ["database", 1.3, -0.4]],
   dropbox: [["app", -1.3, -0.5], ["queue", 0.1, 0.7], ["database", 1.3, -0.4]],
+  whatsapp: [["app", -1.3, -0.5], ["cache", 0.1, 0.7], ["database", 1.3, -0.4]],
   // Topics still to build.
   estimation: [["users", 0, 0]],
   "api-design": [["app", 0, 0]],
@@ -46,6 +47,7 @@ const THUMBS: Record<string, Spot[]> = {
   search: [["database", -1.1, 0], ["cache", 1.1, 0]],
   availability: [["balancer", 0, -0.6], ["server", -1.2, 0.7], ["replica", 1.2, 0.7]],
   "real-time": [["topic", 0, 0]],
+  presence: [["app", -1.2, 0], ["users", 1.1, 0]],
   "adaptive-streaming": [["server", -1.2, 0], ["cache", 1.1, 0]],
   "fan-out": [["topic", 0, -0.6], ["queue", -1.2, 0.7], ["queue", 1.2, 0.7]],
   observability: [["stream", 0, 0]],
