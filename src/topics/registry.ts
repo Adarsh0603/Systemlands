@@ -30,6 +30,9 @@ import { REFERENCE as CONSISTENT_HASHING_REFERENCE } from './consistent-hashing/
 import { CHAPTERS as FAN_OUT_CHAPTERS } from './fan-out/chapters'
 import FanOutPlay from './fan-out/Play'
 import { REFERENCE as FAN_OUT_REFERENCE } from './fan-out/reference'
+import { CHAPTERS as CHUNKING_DEDUPE_CHAPTERS } from './chunking-dedupe/chapters'
+import ChunkingDedupePlay from './chunking-dedupe/Play'
+import { REFERENCE as CHUNKING_DEDUPE_REFERENCE } from './chunking-dedupe/reference'
 import { CHAPTERS as GEOSPATIAL_CHAPTERS } from './geospatial/chapters'
 import GeospatialPlay from './geospatial/Play'
 import { REFERENCE as GEOSPATIAL_REFERENCE } from './geospatial/reference'
@@ -233,6 +236,17 @@ export const TOPICS: TopicEntry[] = [
     challenges: challengeIds(GEOSPATIAL_CHAPTERS),
     Play: GeospatialPlay,
     reference: GEOSPATIAL_REFERENCE,
+  },
+  {
+    id: 'chunking-dedupe',
+    title: 'Chunking and dedupe',
+    short: 'Chunking',
+    track: 'data',
+    pitch: 'Send only what changed, and store each piece once.',
+    chapters: CHUNKING_DEDUPE_CHAPTERS.map((c) => c.title),
+    challenges: challengeIds(CHUNKING_DEDUPE_CHAPTERS),
+    Play: ChunkingDedupePlay,
+    reference: CHUNKING_DEDUPE_REFERENCE,
   },
 
   {

@@ -41,6 +41,7 @@ const THUMBS: Record<string, Spot[]> = {
   authentication: [["app", -1.1, 0], ["database", 1.1, 0]],
   "data-modeling": [["database", 0, 0]],
   geospatial: [["users", -1.2, 0], ["cache", 1.1, 0]],
+  "chunking-dedupe": [["database", -1.3, 0.5], ["database", 0, -0.6], ["database", 1.3, 0.5]],
   "blob-storage": [["database", -1.2, 0], ["database", 1.2, 0]],
   search: [["database", -1.1, 0], ["cache", 1.1, 0]],
   availability: [["balancer", 0, -0.6], ["server", -1.2, 0.7], ["replica", 1.2, 0.7]],
