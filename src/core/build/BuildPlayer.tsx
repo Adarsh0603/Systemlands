@@ -139,8 +139,8 @@ function Builder({
   const [pinnedOpen, setPinnedOpen] = useState(true);
   const [running, setRunning] = useState(!task.manualStart);
   // Set the moment a fail-fast task's requirement breaks: the run freezes there.
-  const [failure, setFailure] = useState<{ title: string; text: string; at: number; hint?: string; diag?: Diagnosis; broke?: string } | null>(null);
-  // Failed runs so far on this stage; from the fifth, the card also says why.
+  const [failure, setFailure] = useState<{ title: string; text: string; at: number; hint?: string; diag?: Diagnosis } | null>(null);
+  // Failed runs since the last hint (or the start of the stage); on the fifth the card also says why.
   const [fails, setFails] = useState(0);
   // The problem text the learner closed; it stays hidden until the text changes.
   const [dismissed, setDismissed] = useState<string | null>(null);
@@ -275,9 +275,9 @@ function Builder({
       at: tick,
       hint: hint ?? undefined,
       diag,
-      broke: broken.says.split('. ')[0],
     });
-    setFails(fails + 1);
+    // A hint shows once. The next one needs four more failed runs, for whatever breaks next.
+    setFails(hint ? 0 : fails + 1);
     setRunning(false);
     play("drum");
   }, [task, running, solved, failure, fails, tick, m, placed, settings, run]);
@@ -657,7 +657,6 @@ function Builder({
       </div>
       {shownDiag ? (
         <div className="mt-1 space-y-1">
-          {failure?.broke && <p>{failure.broke}.</p>}
           <p>{shownDiag.because}</p>
           <p className="font-medium">{shownDiag.look}</p>
         </div>

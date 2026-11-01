@@ -34,6 +34,7 @@ const THUMBS: Record<string, Spot[]> = {
   "ride-sharing": [["users", -1.3, 0.6], ["cache", 0.1, -0.6], ["app", 1.3, 0.5]],
   "twitter-timeline": [["cache", -1.2, 0.7], ["queue", 0.1, -0.7], ["database", 1.3, 0.5]],
   youtube: [["queue", -1.3, -0.6], ["cache", 0.1, 0.7], ["database", 1.3, -0.4]],
+  dropbox: [["app", -1.3, -0.5], ["queue", 0.1, 0.7], ["database", 1.3, -0.4]],
   // Topics still to build.
   estimation: [["users", 0, 0]],
   "api-design": [["app", 0, 0]],

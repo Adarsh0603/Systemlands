@@ -183,7 +183,7 @@ export interface BuildTask {
   freshDay?: boolean
   // What the finished run achieved, in its own numbers: shown on the win card instead of `win`.
   result?: (m: BuildMetrics, placed: Placement, settings: Settings, flow: FlowSim) => string | null
-  // After HINT_AFTER failed runs the failure card also says why. Unlike `problem`, it may name the cause.
+  // After HINT_AFTER failed runs (counted again after each hint) the failure card also says why. Unlike `problem`, it may name the cause.
   hint?: (m: BuildMetrics, placed: Placement, settings: Settings, flow: FlowSim) => string | null
   check: (m: BuildMetrics, placed: Placement, settings: Settings, flow?: FlowSim) => boolean
 }

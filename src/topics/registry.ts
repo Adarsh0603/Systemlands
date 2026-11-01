@@ -75,6 +75,9 @@ import { REFERENCE as KEY_VALUE_STORE_REFERENCE } from './key-value-store/refere
 import RideSharingPlay from './ride-sharing/Play'
 import { RIDE_SHARING } from './ride-sharing/build'
 import { REFERENCE as RIDE_SHARING_REFERENCE } from './ride-sharing/reference'
+import DropboxPlay from './dropbox/Play'
+import { DROPBOX } from './dropbox/build'
+import { REFERENCE as DROPBOX_REFERENCE } from './dropbox/reference'
 import YoutubePlay from './youtube/Play'
 import { YOUTUBE } from './youtube/build'
 import { REFERENCE as YOUTUBE_REFERENCE } from './youtube/reference'
@@ -460,6 +463,16 @@ export const TOPICS: TopicEntry[] = [
     challenges: ['0:0', '1:0', '2:0'],
     Play: YoutubePlay,
     reference: YOUTUBE_REFERENCE,
+  },
+  {
+    id: 'dropbox',
+    title: 'Dropbox',
+    track: 'capstones',
+    pitch: 'Sync every file to every device, sending only what changed.',
+    chapters: [...DROPBOX.stages],
+    challenges: ['0:0', '1:0', '2:0'],
+    Play: DropboxPlay,
+    reference: DROPBOX_REFERENCE,
   },
 ]
 

@@ -411,7 +411,7 @@ export const INTRO: Intro = {
     check: () => false,
   },
   steps: [
-    { say: 'Dana uploads a video she filmed on her phone. It is large, and made for one phone only.', at: 'uploaders', label: 'Dana' },
+    { say: 'Joe uploads a video filmed on a phone. It is large, and made for one phone only.', at: 'uploaders', label: 'Joe' },
     { say: 'A transcoder turns it into smaller files in several qualities, so any phone on any network can play it.', at: 'enc-0', label: 'Transcoder' },
     { say: 'The finished files are kept in the video store, cut into short segments a few seconds long.', at: 's0', label: 'Video store' },
     { say: 'Someone presses play. The origin reads the first segments from the store and sends them on, one after another.', at: 'origin', label: 'Origin' },
