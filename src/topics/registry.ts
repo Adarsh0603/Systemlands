@@ -45,6 +45,9 @@ import { CHAPTERS as PUBSUB_CHAPTERS } from './pubsub/chapters'
 import PubsubPlay from './pubsub/Play'
 import { REFERENCE as PUBSUB_REFERENCE } from './pubsub/reference'
 import { ADVANCED as LOAD_BALANCING_CARDS, INTERVIEW as LOAD_BALANCING_INTERVIEW } from './load-balancing/reference'
+import { CHAPTERS as LOCKING_CHAPTERS } from './locking/chapters'
+import LockingPlay from './locking/Play'
+import { REFERENCE as LOCKING_REFERENCE } from './locking/reference'
 import { CHAPTERS as PRESENCE_CHAPTERS } from './presence/chapters'
 import PresencePlay from './presence/Play'
 import { REFERENCE as PRESENCE_REFERENCE } from './presence/reference'
@@ -362,6 +365,17 @@ export const TOPICS: TopicEntry[] = [
     challenges: challengeIds(IDEMPOTENCY_CHAPTERS),
     Play: IdempotencyPlay,
     reference: IDEMPOTENCY_REFERENCE,
+  },
+  {
+    id: 'locking',
+    title: 'Locking & concurrency',
+    short: 'Locking',
+    track: 'distributed',
+    pitch: 'Stop two requests from selling the same seat.',
+    chapters: LOCKING_CHAPTERS.map((c) => c.title),
+    challenges: challengeIds(LOCKING_CHAPTERS),
+    Play: LockingPlay,
+    reference: LOCKING_REFERENCE,
   },
   {
     id: 'sagas',

@@ -36,6 +36,7 @@ const LESSON: Record<string, string> = {
   'Fan-out': 'fan-out',
   'Real-time messaging': 'real-time',
   Presence: 'presence',
+  'Locking and concurrency': 'locking',
   Geospatial: 'geospatial',
   'Chunking and dedupe': 'chunking-dedupe',
   'Adaptive streaming': 'adaptive-streaming',
