@@ -11,6 +11,7 @@ import {
 import { navigate, replaceRoute, useRoute } from "./core/router";
 import Home from "./home/Home";
 import WelcomeDialog from "./home/WelcomeDialog";
+import WhatsNew from "./home/WhatsNew";
 import CheatSheetPage from "./core/CheatSheetPage";
 import TopicComplete from "./TopicComplete";
 import { TOPICS, type TopicEntry } from "./topics/registry";
@@ -83,6 +84,7 @@ export default function App() {
             )}
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            <WhatsNew home={!topic} />
             <AccountButton />
             <button
               onClick={toggle}
