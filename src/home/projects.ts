@@ -18,6 +18,7 @@ export interface Project {
 
 // Concepts, by the name a project uses, to the lesson that teaches them.
 const LESSON: Record<string, string> = {
+  'Load balancing': 'load-balancing',
   Caching: 'caching',
   Replication: 'replication',
   Sharding: 'sharding',
@@ -56,19 +57,19 @@ export function conceptOf(name: string): Concept {
 }
 
 export const PROJECTS: Project[] = [
-  { id: 'url-shortener', name: 'URL shortener', short: 'URL', tier: 0, x: 200, y: 690, needs: ['Caching', 'Replication', 'Sharding', 'Bloom filters', 'Rate limiting'] },
-  { id: 'notifications', name: 'Notifications', short: 'Notify', tier: 0, x: 340, y: 652, needs: ['Message queues', 'Pub/sub', 'Rate limiting', 'Idempotency'] },
+  { id: 'url-shortener', name: 'URL shortener', short: 'URL', tier: 0, x: 200, y: 690, needs: ['Load balancing', 'Caching', 'Replication', 'Message queues', 'Rate limiting'] },
+  { id: 'notifications', name: 'Notifications', short: 'Notify', tier: 0, x: 340, y: 652, needs: ['Message queues', 'Rate limiting', 'Idempotency', 'Circuit breakers'] },
   { id: 'web-crawler', name: 'Web crawler', short: 'Crawler', tier: 0, x: 470, y: 685, needs: ['Message queues', 'Bloom filters', 'Rate limiting', 'Consistent hashing'] },
   { id: 'news-feed', name: 'Social feed', short: 'Feed', tier: 1, x: 630, y: 615, needs: ['Caching', 'Fan-out', 'Message queues', 'Sharding'] },
-  { id: 'chat', name: 'Chat app', short: 'Chat', tier: 1, x: 770, y: 572, needs: ['Real-time messaging', 'Pub/sub', 'Replication', 'Consistent hashing'] },
-  { id: 'video-streaming', name: 'Video streaming', short: 'Video', tier: 1, x: 930, y: 560, needs: ['CDN', 'Message queues', 'Autoscaling', 'Caching'] },
-  { id: 'key-value-store', name: 'Key-value store', short: 'KV store', tier: 1, x: 660, y: 492, needs: ['Consistent hashing', 'Replication', 'CAP', 'Consensus'] },
-  { id: 'payments', name: 'Payments', short: 'Payments', tier: 2, x: 380, y: 445, needs: ['Idempotency', 'Sagas', 'Circuit breakers', 'Consensus'] },
-  { id: 'ride-sharing', name: 'Ride sharing', short: 'Rides', tier: 2, x: 230, y: 400, needs: ['Geospatial', 'Sharding', 'Pub/sub', 'Consensus'] },
-  { id: 'twitter-timeline', name: 'Twitter timeline', short: 'Twitter', tier: 3, x: 540, y: 310, needs: ['Fan-out', 'Caching', 'Sharding', 'Message queues', 'Consistent hashing'] },
+  { id: 'chat', name: 'Chat app', short: 'Chat', tier: 1, x: 770, y: 572, needs: ['Real-time messaging', 'Pub/sub', 'Message queues', 'Idempotency'] },
+  { id: 'video-streaming', name: 'Video streaming', short: 'Video', tier: 1, x: 930, y: 560, needs: ['CDN', 'Message queues', 'Autoscaling', 'Caching', 'Adaptive streaming'] },
+  { id: 'key-value-store', name: 'Key-value store', short: 'KV store', tier: 1, x: 660, y: 492, needs: ['Consistent hashing', 'Replication', 'CAP', 'Caching'] },
+  { id: 'payments', name: 'Payments', short: 'Payments', tier: 2, x: 380, y: 445, needs: ['Idempotency', 'Sagas', 'Circuit breakers', 'Message queues'] },
+  { id: 'ride-sharing', name: 'Ride sharing', short: 'Rides', tier: 2, x: 230, y: 400, needs: ['Geospatial', 'Sharding', 'Locking and concurrency', 'Caching', 'Message queues'] },
+  { id: 'twitter-timeline', name: 'Twitter timeline', short: 'Twitter', tier: 3, x: 540, y: 310, needs: ['Fan-out', 'Caching', 'Sharding', 'Message queues'] },
   { id: 'youtube', name: 'YouTube', short: 'YouTube', tier: 3, x: 720, y: 355, needs: ['CDN', 'Autoscaling', 'Message queues', 'Caching', 'Adaptive streaming'] },
-  { id: 'dropbox', name: 'Dropbox', short: 'Dropbox', tier: 3, x: 920, y: 355, needs: ['Chunking and dedupe', 'CDN', 'Sharding', 'Replication', 'Message queues'] },
-  { id: 'whatsapp', name: 'WhatsApp', short: 'WhatsApp', tier: 3, x: 1060, y: 330, needs: ['Real-time messaging', 'Presence', 'Pub/sub', 'Replication', 'Idempotency', 'Sharding'] },
+  { id: 'dropbox', name: 'Dropbox', short: 'Dropbox', tier: 3, x: 920, y: 355, needs: ['Chunking and dedupe', 'Sharding', 'Replication', 'Message queues'] },
+  { id: 'whatsapp', name: 'WhatsApp', short: 'WhatsApp', tier: 3, x: 1060, y: 330, needs: ['Real-time messaging', 'Presence', 'Message queues', 'Caching', 'Sharding'] },
   { id: 'ticketmaster', name: 'Ticketmaster', short: 'Tickets', tier: 3, x: 1110, y: 212, needs: ['Locking and concurrency', 'Idempotency', 'Rate limiting', 'Message queues', 'Sagas'] },
   { id: 'uber', name: 'Uber', short: 'Uber', tier: 3, x: 985, y: 140, needs: ['Geospatial', 'Pub/sub', 'Sharding', 'Consensus', 'Autoscaling'] },
   { id: 'kafka', name: 'Kafka', short: 'Kafka', tier: 3, x: 700, y: 108, needs: ['Replication', 'Consensus', 'Sharding', 'CAP'] },
