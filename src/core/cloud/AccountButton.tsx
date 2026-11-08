@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { askConfirm } from '../ConfirmDialog'
 import { openSignIn, setUser, useSession } from './session'
 
@@ -10,6 +10,22 @@ export default function AccountButton() {
   const [cloud, setCloud] = useState<Cloud | null>(null)
   const { user } = useSession()
   const [open, setOpen] = useState(false)
+  const box = useRef<HTMLDivElement>(null)
+
+  // A press anywhere outside the menu, or Escape, closes it.
+  useEffect(() => {
+    if (!open) return
+    const away = (e: PointerEvent) => {
+      if (!box.current?.contains(e.target as Node)) setOpen(false)
+    }
+    const escape = (e: KeyboardEvent) => e.key === 'Escape' && setOpen(false)
+    window.addEventListener('pointerdown', away)
+    window.addEventListener('keydown', escape)
+    return () => {
+      window.removeEventListener('pointerdown', away)
+      window.removeEventListener('keydown', escape)
+    }
+  }, [open])
 
   useEffect(() => {
     let dead = false
@@ -39,7 +55,7 @@ export default function AccountButton() {
     )
   }
   return (
-    <div className="relative">
+    <div ref={box} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
