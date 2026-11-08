@@ -214,13 +214,57 @@ const PIECE_HINTS: BuildTask['hints'] = {
 
 const COUNT = (what: string) => ['1 node', '2 nodes', '3 nodes', '4 nodes', '5 nodes'].map((n) => `${what} ${n}`.trim())
 const SETTINGS = [
-  { id: 'copies', label: 'every key is kept on', when: 'database' as const, min: 0, max: 4, step: 1, initial: 0, options: COUNT('') },
-  { id: 'readq', label: 'a read waits for answers from', when: 'database' as const, min: 0, max: 4, step: 1, initial: 0, options: COUNT('') },
-  { id: 'writeq', label: 'a write waits for answers from', when: 'database' as const, min: 0, max: 4, step: 1, initial: 0, options: COUNT('') },
-  { id: 'handoff', label: 'a write meant for a node that is down', when: 'database' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Skips it', 'Goes to a stand-in node'] },
-  { id: 'repair', label: 'a read that finds an old copy', when: 'database' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Leaves it', 'Fixes it'] },
-  { id: 'stamp', label: 'the newest version of a value is decided by', when: 'database' as const, min: 0, max: 1, step: 1, initial: 0, options: ['The time on a node’s clock', 'A version number that counts up'] },
-  { id: 'slices', label: 'each node owns', when: 'ring' as const, min: 0, max: 1, step: 1, initial: 0, options: ['One big slice of the ring', 'Many small slices'] },
+  { id: 'copies', label: 'every key is kept on', when: 'database' as const, min: 0, max: 4, step: 1, initial: 0, options: COUNT(''),
+    tradeoffs: [
+      { gain: 'Least storage.', cost: 'One node lost means its keys are lost.' },
+      { gain: 'Survives one node going down.', cost: 'Twice the storage.' },
+      { gain: 'Survives two nodes going down.', cost: 'Three times the storage.' },
+      { gain: 'Survives three nodes going down.', cost: 'Four times the storage.' },
+      { gain: 'Survives four nodes going down.', cost: 'Five times the storage, and every write reaches five nodes.' },
+    ],
+  },
+  { id: 'readq', label: 'a read waits for answers from', when: 'database' as const, min: 0, max: 4, step: 1, initial: 0, options: COUNT(''),
+    tradeoffs: [
+      { gain: 'Fastest. Works while any one copy is up.', cost: 'Can return an old value.' },
+      { gain: 'Two copies compared.', cost: 'Waits for 2 nodes. Fails if fewer are up.' },
+      { gain: 'Three copies compared.', cost: 'Waits for 3 nodes. Fails if fewer are up.' },
+      { gain: 'Four copies compared.', cost: 'Waits for 4 nodes. Fails if fewer are up.' },
+      { gain: 'Every copy compared.', cost: 'Waits for 5 nodes. Fails if any one is down.' },
+    ],
+  },
+  { id: 'writeq', label: 'a write waits for answers from', when: 'database' as const, min: 0, max: 4, step: 1, initial: 0, options: COUNT(''),
+    tradeoffs: [
+      { gain: 'Fastest. Works while any one node is up.', cost: 'Other copies can lag behind.' },
+      { gain: 'Lands on 2 nodes before it is confirmed.', cost: 'Waits for 2 nodes. Fails if fewer are up.' },
+      { gain: 'Lands on 3 nodes before it is confirmed.', cost: 'Waits for 3 nodes. Fails if fewer are up.' },
+      { gain: 'Lands on 4 nodes before it is confirmed.', cost: 'Waits for 4 nodes. Fails if fewer are up.' },
+      { gain: 'Lands on every node before it is confirmed.', cost: 'Fails if any one node is down.' },
+    ],
+  },
+  { id: 'handoff', label: 'a write meant for a node that is down', when: 'database' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Skips it', 'Goes to a stand-in node'],
+    tradeoffs: [
+      { gain: 'Nothing extra to hold.', cost: 'The node that was down misses the write.' },
+      { gain: 'The write still lands on enough nodes.', cost: 'The stand-in holds it and must pass it on later.' },
+    ],
+  },
+  { id: 'repair', label: 'a read that finds an old copy', when: 'database' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Leaves it', 'Fixes it'],
+    tradeoffs: [
+      { gain: 'Reads do no extra work.', cost: 'An old copy stays old until something else fixes it.' },
+      { gain: 'Old copies catch up as they are read.', cost: 'Some reads also write.' },
+    ],
+  },
+  { id: 'stamp', label: 'the newest version of a value is decided by', when: 'database' as const, min: 0, max: 1, step: 1, initial: 0, options: ['The time on a node’s clock', 'A version number that counts up'],
+    tradeoffs: [
+      { gain: 'Nothing to keep: every node has a clock.', cost: 'Clocks drift, so an older write can look newer.' },
+      { gain: 'Newer is always a bigger number.', cost: 'The current number must be read before each write.' },
+    ],
+  },
+  { id: 'slices', label: 'each node owns', when: 'ring' as const, min: 0, max: 1, step: 1, initial: 0, options: ['One big slice of the ring', 'Many small slices'],
+    tradeoffs: [
+      { gain: 'A simple map of who owns what.', cost: 'A node that leaves drops its whole slice on one neighbour.' },
+      { gain: 'Load spreads evenly, and a leaving node’s keys spread over many.', cost: 'A bigger map to keep and share.' },
+    ],
+  },
 ]
 
 function decorate(flow: FlowSim, raw: Placement) {

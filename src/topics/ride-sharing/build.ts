@@ -222,13 +222,33 @@ const PIECE_HINTS: BuildTask['hints'] = {
   topic: 'sends one message to many listeners',
 }
 
-const PINGS = { id: 'pings', label: 'driver pings are written', when: 'cache' as const, min: 0, max: 1, step: 1, initial: 0, options: PINGS_NAMES }
+const PINGS = { id: 'pings', label: 'driver pings are written', when: 'cache' as const, min: 0, max: 1, step: 1, initial: 0, options: PINGS_NAMES,
+  tradeoffs: [
+    { gain: 'Every ping is kept for good.', cost: 'Thousands of writes a second hit the database.' },
+    { gain: 'Fast writes and fast nearby lookups.', cost: 'Pings are lost if the map restarts.' },
+  ],
+}
 const SETTINGS = [
   PINGS,
   { id: 'shards', label: 'shard', when: 'server' as const, min: 1, max: 4, step: 1, initial: 1 },
-  { id: 'split', label: 'the map is cut', when: 'server' as const, min: 0, max: 1, step: 1, initial: 0, options: SPLIT_NAMES },
-  { id: 'claim', label: 'a rider is matched by', when: 'dedupe' as const, min: 0, max: 1, step: 1, initial: 0, options: CLAIM_NAMES },
-  { id: 'crash', label: 'requests being matched are', when: 'queue' as const, min: 0, max: 1, step: 1, initial: 0, options: CRASH_NAMES },
+  { id: 'split', label: 'the map is cut', when: 'server' as const, min: 0, max: 1, step: 1, initial: 0, options: SPLIT_NAMES,
+    tradeoffs: [
+      { gain: 'Simple: a place always maps to the same shard.', cost: 'A busy city centre lands on one shard.' },
+      { gain: 'Load spreads evenly.', cost: 'The cut lines must be worked out and moved over time.' },
+    ],
+  },
+  { id: 'claim', label: 'a rider is matched by', when: 'dedupe' as const, min: 0, max: 1, step: 1, initial: 0, options: CLAIM_NAMES,
+    tradeoffs: [
+      { gain: 'The fastest offer.', cost: 'Two riders can be offered the same car.' },
+      { gain: 'A car is offered to one rider at a time.', cost: 'An extra step before every offer.' },
+    ],
+  },
+  { id: 'crash', label: 'requests being matched are', when: 'queue' as const, min: 0, max: 1, step: 1, initial: 0, options: CRASH_NAMES,
+    tradeoffs: [
+      { gain: 'Fast, with no extra writes.', cost: 'A crash forgets every request in flight.' },
+      { gain: 'Requests survive a crash.', cost: 'A write before every match, and a replay on restart.' },
+    ],
+  },
 ]
 
 function decorate(flow: FlowSim, raw: Placement) {

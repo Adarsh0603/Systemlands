@@ -277,13 +277,38 @@ const PIECE_HINTS: BuildTask['hints'] = {
 }
 
 // Stage 2 has only small accounts, so the choice is just when the work is done.
-const WHEN = { id: 'when', label: 'a timeline is made', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['When a tweet is sent', 'When a timeline opens'] }
+const WHEN = { id: 'when', label: 'a timeline is made', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['When a tweet is sent', 'When a timeline opens'],
+  tradeoffs: [
+    { gain: 'A timeline opens at once: it is already made.', cost: 'Every tweet is copied to every follower.' },
+    { gain: 'A tweet is one write.', cost: 'Every open gathers tweets from everyone followed.' },
+  ],
+}
 
 const SETTINGS = [
-  { id: 'line', label: 'Look up an account with more followers than', when: 'app' as const, min: 0, max: LINE_START, step: 1, initial: LINE_START, options: LINE_NAMES },
+  { id: 'line', label: 'Look up an account with more followers than', when: 'app' as const, min: 0, max: LINE_START, step: 1, initial: LINE_START, options: LINE_NAMES,
+    tradeoffs: [
+      { gain: 'Almost no copies are written.', cost: 'Almost every open gathers tweets from many accounts.' },
+      { gain: 'Few copies are written.', cost: 'Opens gather tweets from most accounts followed.' },
+      { gain: 'Copies only for small accounts.', cost: 'Opens look up every mid-size account followed.' },
+      { gain: 'Only large accounts are looked up.', cost: 'Accounts just under 100,000 still copy to every follower.' },
+      { gain: 'Only the biggest accounts are looked up.', cost: 'Accounts just under 1 million still copy to every follower.' },
+      { gain: 'Opens rarely gather anything.', cost: 'An account just under 10 million copies each tweet millions of times.' },
+      { gain: 'Every timeline is ready ahead.', cost: 'The biggest accounts copy each tweet to every follower.' },
+    ],
+  },
   { id: 'length', label: 'A timeline keeps the newest', when: 'app' as const, min: 200, max: 2000, step: 50, initial: LENGTH_START, slider: { unit: 'tweets' } },
-  { id: 'holds', label: 'a timeline holds', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: HOLDS_NAMES },
-  { id: 'rebuild', label: 'a lost timeline is rebuilt', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: REBUILD_NAMES },
+  { id: 'holds', label: 'a timeline holds', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: HOLDS_NAMES,
+    tradeoffs: [
+      { gain: 'A timeline reads in one go.', cost: 'The whole tweet is stored again in every timeline.' },
+      { gain: 'Small timelines, and one stored copy of each tweet.', cost: 'An open must fetch each tweet by its id.' },
+    ],
+  },
+  { id: 'rebuild', label: 'a lost timeline is rebuilt', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: REBUILD_NAMES,
+    tradeoffs: [
+      { gain: 'Nothing to coordinate.', cost: 'Many opens at once rebuild the same timeline many times.' },
+      { gain: 'One rebuild, however many opens.', cost: 'The others wait for it to finish.' },
+    ],
+  },
 ]
 
 const WATCH = {

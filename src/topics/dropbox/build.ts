@@ -266,10 +266,25 @@ const PIECE_HINTS: BuildTask['hints'] = {
 
 const SETTINGS = [
   { id: 'chunk', label: 'A chunk is', when: 'app' as const, min: 1, max: 128, step: 1, initial: 128, slider: { unit: 'MB' } },
-  { id: 'content', label: 'Chunks are cut', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Every so many bytes', 'Where the content says'] },
-  { id: 'dedupe', label: 'A chunk the store already has', when: 'database' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Is sent again', 'Is not sent again'] },
+  { id: 'content', label: 'Chunks are cut', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Every so many bytes', 'Where the content says'],
+    tradeoffs: [
+      { gain: 'Simple and fast to cut.', cost: 'One byte added near the start shifts every chunk after it.' },
+      { gain: 'An edit changes only the chunks around it.', cost: 'More work to find where to cut.' },
+    ],
+  },
+  { id: 'dedupe', label: 'A chunk the store already has', when: 'database' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Is sent again', 'Is not sent again'],
+    tradeoffs: [
+      { gain: 'Nothing to check before an upload.', cost: 'The same bytes cross the network and fill the store again.' },
+      { gain: 'Known chunks skip the upload.', cost: 'Every chunk is looked up first.' },
+    ],
+  },
   { id: 'copies', label: 'Every chunk is kept in', when: 'database' as const, min: 1, max: 4, step: 1, initial: 1, slider: { unit: 'copies' } },
-  { id: 'batch', label: 'Devices are told', when: 'queue' as const, min: 0, max: 1, step: 1, initial: 0, options: ['One by one', 'In batches'] },
+  { id: 'batch', label: 'Devices are told', when: 'queue' as const, min: 0, max: 1, step: 1, initial: 0, options: ['One by one', 'In batches'],
+    tradeoffs: [
+      { gain: 'Each device hears at once.', cost: 'One message per device for every change.' },
+      { gain: 'Far fewer messages.', cost: 'A device hears a little later.' },
+    ],
+  },
 ]
 
 const WATCH = {

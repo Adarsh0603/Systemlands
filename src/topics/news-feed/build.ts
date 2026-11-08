@@ -198,11 +198,28 @@ const PIECE_HINTS: BuildTask['hints'] = {
 }
 
 // Stage 2 has only small accounts, so the choice is just when the work is done.
-const WHEN = { id: 'when', label: 'a feed is made', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['When a post is made', 'When a feed opens'] }
+const WHEN = { id: 'when', label: 'a feed is made', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['When a post is made', 'When a feed opens'],
+  tradeoffs: [
+    { gain: 'A feed opens at once: it is already made.', cost: 'Every post is copied to every follower.' },
+    { gain: 'A post is one write.', cost: 'Every open gathers posts from everyone followed.' },
+  ],
+}
 
 const SETTINGS = [
-  { id: 'cutoff', label: 'when a feed opens', when: 'app' as const, min: 0, max: 3, step: 1, initial: 0, options: CUTOFF_NAMES },
-  { id: 'idle', label: 'posts are copied to', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['All followers', 'Active followers only'] },
+  { id: 'cutoff', label: 'when a feed opens', when: 'app' as const, min: 0, max: 3, step: 1, initial: 0, options: CUTOFF_NAMES,
+    tradeoffs: [
+      { gain: 'Every feed is ready ahead.', cost: 'A big account’s post means millions of copies.' },
+      { gain: 'Only the biggest accounts skip copying.', cost: 'Accounts just under 1 million still copy to every follower.' },
+      { gain: 'Far fewer copies.', cost: 'A feed that follows many large accounts does more work when it opens.' },
+      { gain: 'No copies at all.', cost: 'Every open gathers posts from everyone followed.' },
+    ],
+  },
+  { id: 'idle', label: 'posts are copied to', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['All followers', 'Active followers only'],
+    tradeoffs: [
+      { gain: 'Every feed is ready, whoever opens it.', cost: 'Copies go to people who may never look.' },
+      { gain: 'No copies to people who are away.', cost: 'A returning follower’s feed is built when they open it.' },
+    ],
+  },
 ]
 
 function decorate(flow: FlowSim, raw: Placement) {

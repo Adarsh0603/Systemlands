@@ -282,7 +282,12 @@ const SETTINGS = [
   { id: 'rungs', label: 'Every video is made in', when: 'app' as const, min: 1, max: 6, step: 1, initial: 1, slider: { unit: 'qualities' } },
   { id: 'segment', label: 'A segment is', when: 'app' as const, min: 2, max: 12, step: 1, initial: 12, slider: { unit: 'seconds' } },
   { id: 'keep', label: 'An edge keeps', when: 'cache' as const, min: 8, max: 96, step: 4, initial: 8, slider: { unit: 'videos' } },
-  { id: 'shield', label: 'an edge that lacks a video asks', when: 'cache' as const, min: 0, max: 1, step: 1, initial: 0, options: ['The origin', 'One shared cache first'] },
+  { id: 'shield', label: 'an edge that lacks a video asks', when: 'cache' as const, min: 0, max: 1, step: 1, initial: 0, options: ['The origin', 'One shared cache first'],
+    tradeoffs: [
+      { gain: 'One hop fewer on a miss.', cost: 'Every edge that misses asks the origin itself.' },
+      { gain: 'Edges share one copy, so the origin is asked once.', cost: 'An extra hop on every miss.' },
+    ],
+  },
 ]
 
 const WATCH = {

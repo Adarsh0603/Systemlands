@@ -230,9 +230,28 @@ const LABELS = [
   ...PROVIDER_NAMES.map((name, i) => ({ at: [PROVIDER_X, 2.2, Z[i]] as [number, number, number], text: name })),
 ]
 const SETTINGS = [
-  { id: 'attempts', label: 'tries', when: 'server' as const, min: 0, max: ATTEMPTS.length - 1, step: 1, initial: 0, options: ATTEMPTS.map((n) => (n === 1 ? 'Try once' : `Up to ${n} tries`)) },
-  { id: 'lanes', label: 'order', when: 'queue' as const, min: 0, max: 1, step: 1, initial: 0, options: ['One shared line', 'Urgent first, by kind'] },
-  { id: 'pace', label: 'marketing pace', when: 'limiter' as const, min: 0, max: PACES.length - 1, step: 1, initial: PACES.length - 1, options: PACES.map((n) => `${n} / second`) },
+  { id: 'attempts', label: 'tries', when: 'server' as const, min: 0, max: ATTEMPTS.length - 1, step: 1, initial: 0, options: ATTEMPTS.map((n) => (n === 1 ? 'Try once' : `Up to ${n} tries`)),
+    tradeoffs: [
+      { gain: 'No repeat work.', cost: 'A message that fails once is lost for good.' },
+      { gain: 'Survives one failed send.', cost: 'A failed send costs a second try.' },
+      { gain: 'Survives two failed sends.', cost: 'Failing messages hold up the line longer.' },
+      { gain: 'Almost nothing is lost.', cost: 'A message that keeps failing takes five tries of work.' },
+    ],
+  },
+  { id: 'lanes', label: 'order', when: 'queue' as const, min: 0, max: 1, step: 1, initial: 0, options: ['One shared line', 'Urgent first, by kind'],
+    tradeoffs: [
+      { gain: 'Simple: first in, first out.', cost: 'An urgent message waits behind everything ahead of it.' },
+      { gain: 'Urgent messages skip the line.', cost: 'Less urgent messages can wait a long time.' },
+    ],
+  },
+  { id: 'pace', label: 'marketing pace', when: 'limiter' as const, min: 0, max: PACES.length - 1, step: 1, initial: PACES.length - 1, options: PACES.map((n) => `${n} / second`),
+    tradeoffs: [
+      { gain: 'Marketing barely touches capacity.', cost: 'A campaign takes a long time to go out.' },
+      { gain: 'Leaves room for other messages.', cost: 'Campaigns go out slowly.' },
+      { gain: 'Campaigns go out faster.', cost: 'Less room left for other messages.' },
+      { gain: 'Campaigns go out fastest.', cost: 'Can crowd out other messages.' },
+    ],
+  },
 ]
 
 // Turns away work once a line is full: the whole queue, or any one lane of it.

@@ -191,9 +191,24 @@ const PIECE_HINTS: BuildTask['hints'] = {
 }
 
 const SETTINGS = [
-  { id: 'order', label: 'messages are put in order by', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['The time they arrive', 'A number for each chat'] },
-  { id: 'group', label: 'a message to a group is stored', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Once for every member', 'Once for the group'] },
-  { id: 'retry', label: 'a phone that lost its gateway tries again', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Right away', 'After a growing wait'] },
+  { id: 'order', label: 'messages are put in order by', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['The time they arrive', 'A number for each chat'],
+    tradeoffs: [
+      { gain: 'Nothing extra to track.', cost: 'Messages that travel at different speeds can show out of order.' },
+      { gain: 'Every message has one fixed place in its chat.', cost: 'Each chat must hand out its numbers one at a time.' },
+    ],
+  },
+  { id: 'group', label: 'a message to a group is stored', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Once for every member', 'Once for the group'],
+    tradeoffs: [
+      { gain: 'Each member’s inbox is ready to read.', cost: 'A big group turns every message into many writes.' },
+      { gain: 'One write per message, however big the group.', cost: 'Each read must also look up the group’s messages.' },
+    ],
+  },
+  { id: 'retry', label: 'a phone that lost its gateway tries again', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Right away', 'After a growing wait'],
+    tradeoffs: [
+      { gain: 'A phone is back as soon as a gateway answers.', cost: 'When a gateway falls, all its phones retry in the same instant.' },
+      { gain: 'Retries spread out over time.', cost: 'Some phones stay offline a little longer.' },
+    ],
+  },
 ]
 
 function decorate(flow: FlowSim, raw: Placement) {

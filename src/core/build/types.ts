@@ -86,6 +86,9 @@ export interface BuildSetting {
   initial: number
   // Names for the values min…max, when the setting is a choice, not a count.
   options?: string[]
+  // What each option gains and what it costs, one pair per option. Shown under
+  // the setting's (i) icon for the option chosen. States the trade, never which to pick.
+  tradeoffs?: { gain: string; cost: string }[]
   // A count with many values shows as a slider, with this unit after the number.
   slider?: { unit: string }
 }

@@ -27,6 +27,7 @@ import {
 } from "./saved";
 import { Source } from "../flow/nodes";
 import Tooltip from "../Tooltip";
+import TradeoffInfo from "./TradeoffInfo";
 import { MS_PER_TICK, TICKS_PER_SECOND, startRun, type Running } from "./run";
 import {
   PIECE_NAMES,
@@ -484,25 +485,38 @@ function Builder({
       }
     />
   );
+  // The trade the chosen option makes, when the setting names one.
+  const tradeoffOf = (s: (typeof shownSettings)[number]) =>
+    s.tradeoffs?.[(settings[s.id] - s.min) / s.step];
+  const tradeoffInfo = (s: (typeof shownSettings)[number]) => {
+    const t = tradeoffOf(s);
+    if (!t) return null;
+    return <TradeoffInfo label={s.label} gain={t.gain} cost={t.cost} />;
+  };
   const settingRow = (s: (typeof shownSettings)[number]) => (
-    <div key={s.id} className="flex min-w-0 items-center gap-2">
-      <PieceIcon kind={s.when} size={28} />
-      {s.options ? (
-        <>
-          <span className="shrink-0 text-sm font-medium">{s.label}</span>
-          <Segmented
-            scroll
-            value={settings[s.id]}
-            options={s.options.map((label, i) => ({
-              value: s.min + i * s.step,
-              label,
-            }))}
-            onChange={(v) => changeSetting(s.id, v)}
-          />
-        </>
-      ) : (
-        settingStepper(s)
-      )}
+    <div key={s.id} className="flex min-w-0 flex-col gap-1">
+      <div className="flex min-w-0 items-center gap-2">
+        <PieceIcon kind={s.when} size={28} />
+        {s.options ? (
+          <>
+            <span className="flex shrink-0 items-center text-sm font-medium">
+              {s.label}
+              {tradeoffInfo(s)}
+            </span>
+            <Segmented
+              scroll
+              value={settings[s.id]}
+              options={s.options.map((label, i) => ({
+                value: s.min + i * s.step,
+                label,
+              }))}
+              onChange={(v) => changeSetting(s.id, v)}
+            />
+          </>
+        ) : (
+          settingStepper(s)
+        )}
+      </div>
     </div>
   );
   // On a phone each setting is a chip showing its value; tapping one opens
@@ -1079,8 +1093,9 @@ function Builder({
                       >
                         {s.options ? (
                           <>
-                            <span className="text-sm font-medium capitalize">
+                            <span className="flex items-center text-sm font-medium capitalize">
                               {s.label}
+                              {tradeoffInfo(s)}
                             </span>
                             <Select
                               fill

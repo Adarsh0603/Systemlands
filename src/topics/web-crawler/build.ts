@@ -221,11 +221,45 @@ const PIECE_HINTS: BuildTask['hints'] = {
 }
 
 const SETTINGS = [
-  { id: 'bits', label: 'row size', when: 'dedupe' as const, min: 0, max: BITS.length - 1, step: 1, initial: 0, options: BITS.map((n) => `${n} switches per page`) },
-  { id: 'budget', label: 'each site may add', when: 'queue' as const, min: 0, max: BUDGETS.length - 1, step: 1, initial: BUDGETS.length - 1, options: BUDGETS.map((n) => (n === Infinity ? 'No limit' : `${n} pages`)) },
-  { id: 'keep', label: 'a handed-out address is', when: 'queue' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Forgotten at once', 'Kept until fetched'] },
-  { id: 'delay', label: 'waits', when: 'limiter' as const, min: 0, max: DELAYS.length - 1, step: 1, initial: 1, options: ['No time', '0.25 s', '0.5 s', '1 s', '2 s'] },
-  { id: 'robots', label: 'robots.txt', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Ignore it', 'Read it first'] },
+  { id: 'bits', label: 'row size', when: 'dedupe' as const, min: 0, max: BITS.length - 1, step: 1, initial: 0, options: BITS.map((n) => `${n} switches per page`),
+    tradeoffs: [
+      { gain: 'Least memory.', cost: 'Many new pages look already seen, and are skipped.' },
+      { gain: 'Little memory.', cost: 'Some new pages look seen, and are skipped.' },
+      { gain: 'Few new pages are wrongly skipped.', cost: 'More memory.' },
+      { gain: 'Very few new pages are wrongly skipped.', cost: 'Even more memory.' },
+      { gain: 'Almost no new page is wrongly skipped.', cost: 'The most memory.' },
+    ],
+  },
+  { id: 'budget', label: 'each site may add', when: 'queue' as const, min: 0, max: BUDGETS.length - 1, step: 1, initial: BUDGETS.length - 1, options: BUDGETS.map((n) => (n === Infinity ? 'No limit' : `${n} pages`)),
+    tradeoffs: [
+      { gain: 'No site can crowd the frontier.', cost: 'Big sites are crawled only in part.' },
+      { gain: 'Sites are kept in check.', cost: 'Large sites are cut short.' },
+      { gain: 'Room for mid-size sites.', cost: 'A trap site can still add 50 pages.' },
+      { gain: 'Most real sites fit.', cost: 'A trap site can add 80 pages.' },
+      { gain: 'Every page of every site can be reached.', cost: 'A site that makes endless pages can fill the frontier.' },
+    ],
+  },
+  { id: 'keep', label: 'a handed-out address is', when: 'queue' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Forgotten at once', 'Kept until fetched'],
+    tradeoffs: [
+      { gain: 'Nothing to track.', cost: 'An address lost with a crashed fetcher is never fetched.' },
+      { gain: 'An address a fetcher drops is handed out again.', cost: 'Every handed-out address is tracked until it is fetched.' },
+    ],
+  },
+  { id: 'delay', label: 'waits', when: 'limiter' as const, min: 0, max: DELAYS.length - 1, step: 1, initial: 1, options: ['No time', '0.25 s', '0.5 s', '1 s', '2 s'],
+    tradeoffs: [
+      { gain: 'The fastest crawl.', cost: 'A site can be flooded with requests.' },
+      { gain: 'A fast crawl.', cost: 'Small sites may still feel the load.' },
+      { gain: 'Gentler on each site.', cost: 'Each site is crawled more slowly.' },
+      { gain: 'Polite to every site.', cost: 'Big sites take a long time.' },
+      { gain: 'Very gentle.', cost: 'Fetchers spend much of their time waiting.' },
+    ],
+  },
+  { id: 'robots', label: 'robots.txt', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Ignore it', 'Read it first'],
+    tradeoffs: [
+      { gain: 'No extra fetch per site.', cost: 'Crawls pages the site asked to be left alone.' },
+      { gain: 'Honours what each site allows.', cost: 'One extra fetch per site before anything else.' },
+    ],
+  },
 ]
 
 function decorate(flow: FlowSim, raw: Placement) {

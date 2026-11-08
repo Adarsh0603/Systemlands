@@ -282,11 +282,36 @@ const PIECE_HINTS: BuildTask['hints'] = {
 
 const SETTINGS = [
   { id: 'keep', label: 'A message nobody has fetched is kept', when: 'database' as const, min: 1, max: 60, step: 1, initial: 1, slider: { unit: 'days' } },
-  { id: 'group', label: 'A group message is stored', when: 'database' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Once for every member', 'Once for the group'] },
-  { id: 'media', label: 'A photo travels', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Inside the message', 'As a link to a file store'] },
-  { id: 'receipts', label: 'Receipts go back', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['One by one', 'In batches'] },
-  { id: 'jitter', label: 'Phones reconnect', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['All at once', 'Spread over a few seconds'] },
-  { id: 'dots', label: 'A status change is sent to', when: 'cache' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Every contact', 'Chats on screen'] },
+  { id: 'group', label: 'A group message is stored', when: 'database' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Once for every member', 'Once for the group'],
+    tradeoffs: [
+      { gain: 'Each member’s inbox is ready to read.', cost: 'A big group turns every message into many writes.' },
+      { gain: 'One write per message, however big the group.', cost: 'Each read must also look up the group’s messages.' },
+    ],
+  },
+  { id: 'media', label: 'A photo travels', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Inside the message', 'As a link to a file store'],
+    tradeoffs: [
+      { gain: 'One send, nothing else to store.', cost: 'Big messages slow the path every message shares.' },
+      { gain: 'Messages stay small and fast.', cost: 'A second fetch to see the photo.' },
+    ],
+  },
+  { id: 'receipts', label: 'Receipts go back', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['One by one', 'In batches'],
+    tradeoffs: [
+      { gain: 'Each tick shows the moment it happens.', cost: 'One message for every receipt.' },
+      { gain: 'Far fewer messages.', cost: 'Ticks show a little later.' },
+    ],
+  },
+  { id: 'jitter', label: 'Phones reconnect', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['All at once', 'Spread over a few seconds'],
+    tradeoffs: [
+      { gain: 'Everyone is back as soon as possible.', cost: 'The servers take every reconnect in the same moment.' },
+      { gain: 'Reconnects arrive at a steady pace.', cost: 'Some phones wait a few seconds longer.' },
+    ],
+  },
+  { id: 'dots', label: 'A status change is sent to', when: 'cache' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Every contact', 'Chats on screen'],
+    tradeoffs: [
+      { gain: 'Everyone sees every change.', cost: 'One change fans out to hundreds of contacts.' },
+      { gain: 'Only people looking get the update.', cost: 'Others see it only when they open the chat.' },
+    ],
+  },
   { id: 'beat', label: 'Phones ping every', when: 'cache' as const, min: 1, max: 40, step: 1, initial: 1, slider: { unit: 's' } },
 ]
 

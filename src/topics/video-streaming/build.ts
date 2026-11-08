@@ -215,10 +215,30 @@ const PIECE_HINTS: BuildTask['hints'] = {
 }
 
 const SETTINGS = [
-  { id: 'chunks', label: 'a long video is transcoded', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Whole, on one transcoder', 'In short segments, in parallel'] },
-  { id: 'quality', label: 'every video is made in', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['One quality', 'Several qualities'] },
-  { id: 'cache', label: 'the CDN keeps', when: 'cache' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Every video watched', 'Only videos watched again soon'] },
-  { id: 'shield', label: 'a CDN edge that lacks a video asks', when: 'cache' as const, min: 0, max: 1, step: 1, initial: 0, options: ['The origin', 'One shared cache first'] },
+  { id: 'chunks', label: 'a long video is transcoded', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Whole, on one transcoder', 'In short segments, in parallel'],
+    tradeoffs: [
+      { gain: 'Simple: one job per video.', cost: 'A long video takes as long as one transcoder needs.' },
+      { gain: 'Many transcoders share a long video.', cost: 'Segments must be split, tracked and joined.' },
+    ],
+  },
+  { id: 'quality', label: 'every video is made in', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['One quality', 'Several qualities'],
+    tradeoffs: [
+      { gain: 'Least transcoding and storage.', cost: 'Slow connections stall, and fast ones get no better picture.' },
+      { gain: 'Each viewer gets a quality their connection keeps up with.', cost: 'More transcoding and storage per video.' },
+    ],
+  },
+  { id: 'cache', label: 'the CDN keeps', when: 'cache' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Every video watched', 'Only videos watched again soon'],
+    tradeoffs: [
+      { gain: 'Anything watched once is close by.', cost: 'Rarely watched videos push out popular ones.' },
+      { gain: 'Space goes to videos people come back to.', cost: 'A first view of anything goes back to the source.' },
+    ],
+  },
+  { id: 'shield', label: 'a CDN edge that lacks a video asks', when: 'cache' as const, min: 0, max: 1, step: 1, initial: 0, options: ['The origin', 'One shared cache first'],
+    tradeoffs: [
+      { gain: 'One hop fewer on a miss.', cost: 'Every edge that misses asks the origin itself.' },
+      { gain: 'Edges share one copy, so the origin is asked once.', cost: 'An extra hop on every miss.' },
+    ],
+  },
 ]
 
 function decorate(flow: FlowSim, raw: Placement) {

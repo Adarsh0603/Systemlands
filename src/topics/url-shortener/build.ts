@@ -242,10 +242,45 @@ const PIECE_HINTS: BuildTask['hints'] = {
 }
 
 const SETTINGS = [
-  { id: 'scheme', label: 'new codes', when: 'app' as const, min: 0, max: 2, step: 1, initial: 0, options: ['One shared counter', 'Own key range per server', 'Random hash, check first'] },
-  { id: 'cache', label: 'holds', when: 'cache' as const, min: 0, max: CACHE_SIZES.length - 1, step: 1, initial: 0, options: CACHE_SIZES.map((n) => `${n} links`) },
-  { id: 'scope', label: 'counts', when: 'limiter' as const, min: 0, max: 1, step: 1, initial: 0, options: ['All requests together', 'Creates, per client'] },
-  { id: 'limit', label: 'limit', when: 'limiter' as const, min: 0, max: LIMITS.length - 1, step: 1, initial: 2, options: LIMITS.map((n) => `${n} / second`) },
+  {
+    id: 'scheme', label: 'new codes', when: 'app' as const, min: 0, max: 2, step: 1, initial: 0,
+    options: ['One shared counter', 'Own key range per server', 'Random hash, check first'],
+    tradeoffs: [
+      { gain: 'Simplest. Codes come out short and in order.', cost: 'Every server waits on the same one number.' },
+      { gain: 'Each server makes codes alone, no waiting.', cost: 'Ranges must be handed out ahead. A crashed server wastes its unused codes.' },
+      { gain: 'No setup and no coordination.', cost: 'An extra database check for every new code.' },
+    ],
+  },
+  {
+    id: 'cache', label: 'holds', when: 'cache' as const, min: 0, max: CACHE_SIZES.length - 1, step: 1, initial: 0,
+    options: CACHE_SIZES.map((n) => `${n} links`),
+    tradeoffs: [
+      { gain: 'Least memory.', cost: 'Most lookups miss and go to the database.' },
+      { gain: 'Little memory.', cost: 'Many lookups still miss.' },
+      { gain: 'More lookups hit memory.', cost: 'More memory.' },
+      { gain: 'Most popular links hit memory.', cost: 'Even more memory.' },
+      { gain: 'The most lookups hit memory.', cost: 'The most memory.' },
+    ],
+  },
+  {
+    id: 'scope', label: 'counts', when: 'limiter' as const, min: 0, max: 1, step: 1, initial: 0,
+    options: ['All requests together', 'Creates, per client'],
+    tradeoffs: [
+      { gain: 'One simple count, nothing to track per client.', cost: 'Real visitors share the limit with whoever floods it.' },
+      { gain: 'Limits only the costly action, each client on its own.', cost: 'Tracks every client. A bot using many addresses slips by.' },
+    ],
+  },
+  {
+    id: 'limit', label: 'limit', when: 'limiter' as const, min: 0, max: LIMITS.length - 1, step: 1, initial: 2,
+    options: LIMITS.map((n) => `${n} / second`),
+    tradeoffs: [
+      { gain: 'Floods stopped hard.', cost: 'Real clients turned away too.' },
+      { gain: 'Floods stopped.', cost: 'Busy real clients sometimes turned away.' },
+      { gain: 'Short bursts allowed.', cost: 'More of a flood gets through.' },
+      { gain: 'Real clients almost never blocked.', cost: 'Much of a flood gets through.' },
+      { gain: 'Nobody blocked.', cost: 'Floods pass almost untouched.' },
+    ],
+  },
 ]
 
 function decorate(flow: FlowSim, raw: Placement) {

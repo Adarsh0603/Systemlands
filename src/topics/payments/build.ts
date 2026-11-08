@@ -234,12 +234,35 @@ const PIECE_HINTS: BuildTask['hints'] = {
   ring: 'gives each key to one machine',
 }
 
-const KEY = { id: 'key', label: 'the idempotency key is', when: 'dedupe' as const, min: 0, max: 2, step: 1, initial: 0, options: KEY_NAMES }
+const KEY = { id: 'key', label: 'the idempotency key is', when: 'dedupe' as const, min: 0, max: 2, step: 1, initial: 0, options: KEY_NAMES,
+  tradeoffs: [
+    { gain: 'Nothing to keep between tries.', cost: 'A retry looks like a new charge.' },
+    { gain: 'Retries of one click share a key.', cost: 'A second click looks like a new charge.' },
+    { gain: 'Every try and click for the order share one key.', cost: 'The key must be made with the order and kept.' },
+  ],
+}
 const SETTINGS = [
   KEY,
-  { id: 'timeout', label: 'checkout waits for a charge', when: 'app' as const, min: 0, max: 2, step: 1, initial: 0, options: TIMEOUT_NAMES },
-  { id: 'retry', label: 'a charge that fails', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Is given up on', 'Is tried up to 3 times'] },
-  { id: 'crash', label: 'when checkout crashes mid-order', when: 'app' as const, min: 0, max: 2, step: 1, initial: 0, options: CRASH_NAMES },
+  { id: 'timeout', label: 'checkout waits for a charge', when: 'app' as const, min: 0, max: 2, step: 1, initial: 0, options: TIMEOUT_NAMES,
+    tradeoffs: [
+      { gain: 'Slow charges still finish.', cost: 'A stuck charge holds checkout for 10 seconds.' },
+      { gain: 'Stuck charges are given up on sooner.', cost: 'Some slow charges are cut off.' },
+      { gain: 'Checkout is never held for long.', cost: 'Many normal charges are cut off.' },
+    ],
+  },
+  { id: 'retry', label: 'a charge that fails', when: 'app' as const, min: 0, max: 1, step: 1, initial: 0, options: ['Is given up on', 'Is tried up to 3 times'],
+    tradeoffs: [
+      { gain: 'No risk of charging twice.', cost: 'A brief failure loses the sale.' },
+      { gain: 'Brief failures recover.', cost: 'Each retry can charge again unless it is recognised.' },
+    ],
+  },
+  { id: 'crash', label: 'when checkout crashes mid-order', when: 'app' as const, min: 0, max: 2, step: 1, initial: 0, options: CRASH_NAMES,
+    tradeoffs: [
+      { gain: 'No extra writes.', cost: 'A crash can leave a charge with no order.' },
+      { gain: 'Every order can be finished after a crash.', cost: 'An extra write before every charge.' },
+      { gain: 'No extra write on the way in.', cost: 'The customer is charged, then refunded, and the order is lost.' },
+    ],
+  },
 ]
 
 function decorate(flow: FlowSim, raw: Placement) {
