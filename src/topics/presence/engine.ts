@@ -90,9 +90,22 @@ export interface PresenceMetrics {
   tunnels: number
   crashes: number
   waiting: number // things still on their way
+  marks: Marks // how things stood once each event had played out
 }
 
-type Act = 'leave' | 'die' | 'back' | 'tunnel' | 'crash'
+// A snapshot taken once an event has played out: when everything has settled and the
+// server has had time to give up on a quiet phone, or SETTLE_LIMIT seconds after the
+// last thing happened, whichever comes first.
+export interface Mark {
+  flips: number
+  lost: number
+  late: number // seconds, as in the metrics
+  right: boolean // the server and the watcher both match what is true
+}
+export type Marks = Partial<Record<Act, Mark>>
+const SETTLE_LIMIT = 45
+
+export type Act = 'leave' | 'die' | 'back' | 'tunnel' | 'crash'
 const ACTS: Act[] = ['leave', 'die', 'back', 'tunnel', 'crash']
 
 export class PresenceSim {
@@ -125,6 +138,9 @@ export class PresenceSim {
   private changes = 0
   private updates = 0
   private counts: Record<Act, number> = { leave: 0, die: 0, back: 0, tunnel: 0, crash: 0 }
+  private marks: Marks = {}
+  private last: Act | null = null // the latest event, waiting for its mark
+  private stirred = 0 // tick of the latest event or tunnel edge
 
   apply(st: PresenceState) {
     this.st = st
@@ -157,6 +173,9 @@ export class PresenceSim {
     this.offlineAt = null
     this.beatNo = this.wrongFor = this.worst = this.late = this.pings = this.lost = this.flips = this.changes = this.updates = 0
     this.counts = { leave: 0, die: 0, back: 0, tunnel: 0, crash: 0 }
+    this.marks = {}
+    this.last = null
+    this.stirred = this.tick
   }
 
   private send(from: Place, to: Place, body: Body, at = 0) {
@@ -171,6 +190,8 @@ export class PresenceSim {
   // Something happens to the phone or the server.
   private act(what: Act) {
     this.counts[what]++
+    this.last = what
+    this.stirred = this.tick
     if (what === 'leave') {
       if (!this.up) return
       this.send('phone', 'server', { kind: 'bye' })
@@ -260,6 +281,7 @@ export class PresenceSim {
       const s = this.script.shift()!
       if (s.act === 'down') this.up = false
       else this.connect()
+      this.stirred = t
     }
 
     const next = this.due.shift()
@@ -269,6 +291,28 @@ export class PresenceSim {
       this.wrongFor++
       this.worst = Math.max(this.worst, this.wrongFor)
     } else this.wrongFor = 0
+
+    if (this.last && !this.marks[this.last] && this.due.length === 0 && this.script.length === 0) {
+      // Watch for at least as long as the server takes to give up on a quiet phone, so lost
+      // pings and a server that forgot have time to show.
+      const since = t - this.stirred
+      const watch = Math.min(SETTLE_LIMIT, this.st.mode === 'beat' ? TIMEOUT_INTERVALS * this.st.interval + this.st.grace : 0)
+      if ((this.settled && since >= watch * TICKS_PER_SECOND) || since > SETTLE_LIMIT * TICKS_PER_SECOND) {
+        const right = this.recorded === this.up && this.shown[0] === this.up
+        this.marks[this.last] = { flips: this.flips, lost: this.lost, late: Math.round(this.late / TICKS_PER_SECOND), right }
+        this.last = null
+      }
+    }
+  }
+
+  // Nothing left to happen: no event or status on its way, and everyone agrees with the truth.
+  private get settled() {
+    return (
+      this.offlineAt === null &&
+      !this.msgs.some((m) => m.kind === 'status') &&
+      this.recorded === this.up &&
+      this.shown[0] === this.up
+    )
   }
 
   get crashing() {
@@ -298,6 +342,7 @@ export class PresenceSim {
       tunnels: this.counts.tunnel,
       crashes: this.counts.crash,
       waiting: this.msgs.length + this.script.length + this.due.length,
+      marks: { ...this.marks },
     }
   }
 }

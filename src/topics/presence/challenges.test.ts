@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { stateAt } from '../../core/chapters'
 import { CHAPTERS } from './chapters'
+import { dayStep } from './day'
 import { PresenceSim } from './engine'
 import type { PresenceState } from './types'
 import { TICKS_PER_SECOND } from './world'
@@ -85,16 +86,34 @@ describe('presence challenges', () => {
     expect(won(play(st, [set({ store: 'disk', interval: 20 }), crash, 60]), goal)).toBe(false)
   })
 
-  it('which one to use: needs every setting right and the whole day', () => {
+  it('which one to use: needs every setting right and the whole day, one event at a time', () => {
     const { st, goal } = challenge(6)
     const right = { mode: 'beat', interval: 5, grace: 10, audience: 'open', store: 'memory' } as const
-    const day = (c: Partial<PresenceState>) => play(st, [set({ ...right, ...c }), tunnel, 60, crash, 10, die, 80])
-    expect(won(day({}), goal)).toBe(true)
-    expect(won(day({ mode: 'flag' }), goal)).toBe(false)
-    expect(won(day({ grace: 0 }), goal)).toBe(false)
-    expect(won(day({ audience: 'all' }), goal)).toBe(false)
-    expect(won(day({ store: 'disk' }), goal)).toBe(false)
-    expect(won(day({ interval: 40 }), goal)).toBe(false)
+    // Press the button for each event once the one before it has played out.
+    const day = (c: Partial<PresenceState>) => {
+      let cur = { ...st, ...right, ...c }
+      const sim = new PresenceSim()
+      sim.apply(cur)
+      for (let t = 0; t < TICKS_PER_SECOND * 400; t++) {
+        const step = dayStep(sim.metrics)
+        if ('over' in step) break
+        if ('next' in step) {
+          cur = { ...cur, [step.next]: cur[step.next] + 1 }
+          sim.apply(cur)
+        }
+        sim.step()
+      }
+      for (let t = 0; t < TICKS_PER_SECOND * 2; t++) sim.step()
+      return { sim, st: cur }
+    }
+    const ok = day({})
+    expect(dayStep(ok.sim.metrics)).toEqual({ over: true, won: true })
+    expect(won(ok, goal)).toBe(true)
+    for (const bad of [{ mode: 'flag' }, { grace: 0 }, { audience: 'all' }, { store: 'disk' }, { interval: 40 }] as const) {
+      const r = day(bad)
+      expect(dayStep(r.sim.metrics), JSON.stringify(bad)).toEqual({ over: true, won: false })
+      expect(won(r, goal), JSON.stringify(bad)).toBe(false)
+    }
     expect(won(play(st, [set(right), tunnel, 60, die, 80]), goal)).toBe(false)
   })
 })

@@ -1,5 +1,6 @@
 import type { Shot } from '../../core/types'
 import { OPEN } from './world'
+import { dayParts } from './day'
 import type { PresenceChapter, PresenceState } from './types'
 
 const BASE: PresenceState = { mode: 'flag', interval: 5, grace: 0, audience: 'all', store: 'memory', leave: 0, die: 0, back: 0, tunnel: 0, crash: 0, round: 0 }
@@ -360,30 +361,20 @@ export const CHAPTERS: PresenceChapter[] = [
         hud: ['seen', 'flips', 'updates'],
       },
       {
-        sub: 'Set it up, then play the whole day: tunnels, a dead phone, and a restart.',
+        sub: 'Pick the settings, then press the button for each event.',
         set: { round: 1 },
         shot: WIDE,
         tags: ['parties', 'status', 'contacts'],
-        controls: ['mode', 'interval', 'grace', 'audience', 'store', 'tunnel', 'die', 'crash'],
+        controls: ['mode', 'interval', 'grace', 'audience', 'store'],
+        day: true,
         hud: ['seen', 'stale', 'flips', 'updates', 'load'],
         challenge: {
-          goal: 'Run the whole day. The dot may change at most three times, a dead phone must show within 40 seconds, no pings may be lost, and only the chats on screen are told.',
+          goal: 'Play Sam’s day, one event at a time:',
           win: 'Heartbeats find dead phones, a short wait hides bumps, the right people get told, and memory with expiry keeps up.',
-          holdSeconds: 2,
-          check: ({ m, st }) =>
-            st.mode === 'beat' &&
-            st.interval * 3 + st.grace <= 40 &&
-            m.tunnels >= 1 &&
-            m.dies >= 1 &&
-            m.crashes >= 1 &&
-            m.waiting === 0 &&
-            !m.up &&
-            !m.shown &&
-            m.lost === 0 &&
-            m.load <= m.cap &&
-            m.perChange <= OPEN &&
-            m.flips <= 3 &&
-            m.late <= 40,
+          holdSeconds: 1,
+          parts: ({ m }) => dayParts(m),
+          progress: ({ m }) => dayParts(m).filter((p) => p.state === 'pass').length / 4,
+          check: ({ m }) => dayParts(m).every((p) => p.state === 'pass'),
         },
       },
     ],

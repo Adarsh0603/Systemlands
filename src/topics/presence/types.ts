@@ -36,6 +36,7 @@ export interface Beat extends BaseBeat<PresenceState, PresenceSim, PresenceMetri
   tags?: TagId[]
   hud?: HudId[]
   controls?: ControlId[]
+  day?: boolean // play tunnels, a restart and a dead phone one at a time, in that order
 }
 
 export type PresenceChapter = Chapter<PresenceState, Beat>

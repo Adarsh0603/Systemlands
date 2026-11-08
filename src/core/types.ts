@@ -25,6 +25,8 @@ export interface Challenge<S, Sim, M> {
   // How much of the goal is done, 0 to 1, for a goal reached in several steps.
   // The bar shows this instead of the hold timer.
   progress?: (ctx: { m: M; st: S; sim: Sim }) => number
+  // A checklist under the goal that fills in as the learner works through it.
+  parts?: (ctx: { m: M; st: S; sim: Sim }) => { label: string; state: 'todo' | 'pass' | 'fail' }[]
 }
 
 // A beat that changes state on a timer, e.g. traffic climbing. `next` returns

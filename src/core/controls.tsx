@@ -80,12 +80,14 @@ export function Select<T extends string | number>({
   onChange,
   label,
   fill,
+  compact,
 }: {
   value: T
   options: { value: T; label: string }[]
   onChange: (value: T) => void
   label: string
   fill?: boolean
+  compact?: boolean // shorter and tighter, for packing several into a phone sheet
 }) {
   return (
     <div className={`relative min-w-0 flex-1 ${fill ? 'w-full' : 'max-w-[60%]'}`}>
@@ -93,7 +95,7 @@ export function Select<T extends string | number>({
         aria-label={label}
         value={value}
         onChange={(e) => onChange((typeof value === 'number' ? Number(e.target.value) : e.target.value) as T)}
-        className="h-11 w-full cursor-pointer appearance-none truncate rounded-xl border border-line bg-bg/80 py-2 pl-3 pr-9 text-sm font-medium shadow-sm transition hover:border-fg focus:border-fg focus:outline-none"
+        className={`w-full cursor-pointer appearance-none truncate rounded-xl border border-line bg-bg/80 font-medium ${compact ? 'h-9 py-1 pl-2.5 pr-6 text-xs' : 'h-11 py-2 pl-3 pr-9 text-sm'} shadow-sm transition hover:border-fg focus:border-fg focus:outline-none`}
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
@@ -101,7 +103,7 @@ export function Select<T extends string | number>({
           </option>
         ))}
       </select>
-      <svg viewBox="0 0 12 12" aria-hidden className="pointer-events-none absolute right-3 top-1/2 h-3 w-3 -translate-y-1/2 text-muted" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 12 12" aria-hidden className={`pointer-events-none absolute top-1/2 h-3 w-3 ${compact ? 'right-2' : 'right-3'} -translate-y-1/2 text-muted`} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M2.5 4.5 6 8l3.5-3.5" />
       </svg>
     </div>

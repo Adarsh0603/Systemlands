@@ -1,4 +1,5 @@
-import { Segmented } from '../../core/controls'
+import { Segmented, Select } from '../../core/controls'
+import { DAY, DAY_LABEL, DAY_WATCH, dayStep } from './day'
 import type { PanelProps } from '../../core/types'
 import type { PresenceMetrics, PresenceSim } from './engine'
 import type { Audience, Beat, Mode, PresenceState, Store } from './types'
@@ -21,17 +22,45 @@ const STORES: { value: Store; label: string }[] = [
   { value: 'memory', label: 'In memory, with expiry' },
 ]
 
+const OPTIONS = { mode: MODES, interval: INTERVALS, grace: GRACES, audience: AUDIENCES, store: STORES }
+// Shorter wording for the packed dropdowns of the last chapter.
+const SHORT = {
+  mode: [
+    { value: 'flag', label: 'Hello/bye' },
+    { value: 'beat', label: 'Heartbeats' },
+  ],
+  interval: INTERVALS,
+  grace: GRACES,
+  audience: [
+    { value: 'all', label: 'All contacts' },
+    { value: 'open', label: 'Open chats' },
+  ],
+  store: [
+    { value: 'disk', label: 'Disk' },
+    { value: 'memory', label: 'Memory' },
+  ],
+}
+const NAMES = { mode: 'How Sam reports', interval: 'Heartbeat interval', grace: 'Wait before offline', audience: 'Who is told', store: 'Where presence lives' }
+
 const Row = ({ children }: { children: React.ReactNode }) => <div className="mt-4">{children}</div>
 
-const Button = ({ onClick, children }: { onClick: () => void; children: React.ReactNode }) => (
-  <button onClick={onClick} className="rounded-xl bg-fg px-5 py-2 text-sm font-medium text-bg transition hover:opacity-90">
+const Button = ({ onClick, wide, children }: { onClick: () => void; wide?: boolean; children: React.ReactNode }) => (
+  <button
+    onClick={onClick}
+    className={`rounded-xl bg-fg px-5 py-2 text-sm font-medium text-bg transition hover:opacity-90 ${wide ? 'w-full sm:w-auto' : ''}`}
+  >
     {children}
   </button>
 )
 
-export default function Controls({ beat, st, update }: PanelProps<PresenceState, PresenceSim, PresenceMetrics, Beat>) {
+const SETTINGS = ['mode', 'interval', 'grace', 'audience', 'store'] as const
+
+export default function Controls({ beat, st, m, update }: PanelProps<PresenceState, PresenceSim, PresenceMetrics, Beat>) {
   const controls = new Set(beat.controls ?? [])
-  const acts = (['leave', 'die', 'back', 'tunnel', 'crash'] as const).filter((k) => controls.has(k))
+  const settings = SETTINGS.filter((k) => controls.has(k))
+  // Many settings at once (the last chapter) would fill a phone screen as rows of pills, so they become dropdowns.
+  const compact = settings.length > 2
+  const acts = beat.day ? [] : (['leave', 'die', 'back', 'tunnel', 'crash'] as const).filter((k) => controls.has(k))
   const label = {
     leave: 'Sam closes the app',
     die: 'Sam’s phone dies',
@@ -52,31 +81,63 @@ export default function Controls({ beat, st, update }: PanelProps<PresenceState,
           </div>
         </Row>
       )}
-      {controls.has('mode') && (
-        <Row>
-          <Segmented scroll value={st.mode} options={MODES} onChange={(v) => update(() => ({ mode: v }))} />
-        </Row>
+      {compact ? (
+        <div className="mt-2 grid grid-cols-3 gap-1.5">
+          {settings.map((k) => (
+            <Select
+              key={k}
+              fill
+              compact
+              label={NAMES[k]}
+              value={st[k] as string | number}
+              options={SHORT[k] as { value: string | number; label: string }[]}
+              onChange={(v) => update(() => ({ [k]: v }))}
+            />
+          ))}
+        </div>
+      ) : (
+        settings.map((k) => (
+          <Row key={k}>
+            <Segmented
+              scroll
+              value={st[k] as string | number}
+              options={OPTIONS[k] as { value: string | number; label: string }[]}
+              onChange={(v) => update(() => ({ [k]: v }))}
+            />
+          </Row>
+        ))
       )}
-      {controls.has('interval') && (
-        <Row>
-          <Segmented scroll value={st.interval} options={INTERVALS} onChange={(v) => update(() => ({ interval: v }))} />
-        </Row>
-      )}
-      {controls.has('grace') && (
-        <Row>
-          <Segmented scroll value={st.grace} options={GRACES} onChange={(v) => update(() => ({ grace: v }))} />
-        </Row>
-      )}
-      {controls.has('audience') && (
-        <Row>
-          <Segmented scroll value={st.audience} options={AUDIENCES} onChange={(v) => update(() => ({ audience: v }))} />
-        </Row>
-      )}
-      {controls.has('store') && (
-        <Row>
-          <Segmented scroll value={st.store} options={STORES} onChange={(v) => update(() => ({ store: v }))} />
-        </Row>
-      )}
+      {beat.day && <Day m={m} update={update} />}
     </>
+  )
+}
+
+// One event at a time: the button for the next one, what to watch while it plays, or a retry.
+function Day({ m, update }: Pick<PanelProps<PresenceState, PresenceSim, PresenceMetrics, Beat>, 'm' | 'update'>) {
+  const step = dayStep(m)
+  if ('over' in step) {
+    if (step.won) return null
+    return (
+      <div className="mt-2 flex items-center gap-3">
+        <span className="min-w-0 flex-1 text-xs text-muted">Not quite. Change a setting, or</span>
+        <Button onClick={() => update((prev) => ({ round: prev.round + 1 }))}>Start the day again</Button>
+      </div>
+    )
+  }
+  const act = 'next' in step ? step.next : step.playing
+  const n = DAY.indexOf(act) + 1
+  return (
+    <div className="mt-2">
+      {'next' in step ? (
+        <Button wide onClick={() => update((prev) => ({ [act]: prev[act] + 1 }))}>
+          {n}/{DAY.length} · {DAY_LABEL[act]}
+        </Button>
+      ) : (
+        <div className="flex h-9 items-center gap-2 text-sm text-muted" aria-live="polite">
+          <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-fg" />
+          {DAY_WATCH[act]}
+        </div>
+      )}
+    </div>
   )
 }

@@ -192,6 +192,8 @@ function LessonPlayer<S, Sim, M, B extends BaseBeat<S, Sim, M>>({
         )
       : 0;
 
+  const parts = challenge?.parts?.({ m: metrics, st, sim });
+
   const barProgress = challenge?.progress
     ? Math.min(1, Math.max(0, challenge.progress({ m: metrics, st, sim })))
     : holdProgress;
@@ -350,6 +352,26 @@ function LessonPlayer<S, Sim, M, B extends BaseBeat<S, Sim, M>>({
                     <div className="text-sm font-medium">
                       {solved ? `✓ ${challenge.win}` : challenge.goal}
                     </div>
+                    {!solved && parts && (
+                      <ul className="mt-1.5 space-y-0.5 text-xs">
+                        {parts.map((p) => (
+                          <li
+                            key={p.label}
+                            className={`flex gap-1.5 ${p.state === "todo" ? "text-muted" : ""}`}
+                          >
+                            <span aria-hidden className="w-3 shrink-0 text-center font-mono">
+                              {p.state === "pass" ? "✓" : p.state === "fail" ? "✗" : "·"}
+                            </span>
+                            <span>
+                              {p.label}
+                              <span className="sr-only">
+                                {p.state === "pass" ? " (done)" : p.state === "fail" ? " (failed)" : " (to do)"}
+                              </span>
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                     {!solved && (
                       <div className="mt-2 h-1 overflow-hidden rounded-full bg-line">
                         <div
