@@ -12,9 +12,41 @@ import { navigate, replaceRoute, useRoute } from "./core/router";
 import Home from "./home/Home";
 import WelcomeDialog from "./home/WelcomeDialog";
 import WhatsNew from "./home/WhatsNew";
+import Tooltip from "./core/Tooltip";
 import CheatSheetPage from "./core/CheatSheetPage";
 import TopicComplete from "./TopicComplete";
 import { TOPICS, type TopicEntry } from "./topics/registry";
+
+const themeIcon = {
+  width: 15,
+  height: 15,
+  viewBox: "0 0 24 24",
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 1.8,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+  "aria-hidden": true,
+};
+
+// Shown in dark mode: the sun switches to light.
+function SunIcon() {
+  return (
+    <svg {...themeIcon}>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+    </svg>
+  );
+}
+
+// Shown in light mode: the moon switches to dark.
+function MoonIcon() {
+  return (
+    <svg {...themeIcon}>
+      <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
+    </svg>
+  );
+}
 
 function useTheme() {
   const [dark, setDark] = useState(() =>
@@ -85,14 +117,19 @@ export default function App() {
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <WhatsNew home={!topic} />
-            <AccountButton />
-            <button
-              onClick={toggle}
-              className="rounded-full border border-line px-3 py-1 font-mono text-xs text-muted transition hover:text-fg"
-              aria-label="Toggle theme"
+            <Tooltip
+              text={dark ? "Light theme" : "Dark theme"}
+              className="inline-flex"
             >
-              {dark ? "Light" : "Dark"}
-            </button>
+              <button
+                onClick={toggle}
+                className="inline-flex items-center rounded-full border border-line px-2 py-1.5 text-muted transition hover:text-fg"
+                aria-label={dark ? "Switch to light theme" : "Switch to dark theme"}
+              >
+                {dark ? <SunIcon /> : <MoonIcon />}
+              </button>
+            </Tooltip>
+            <AccountButton />
           </div>
         </div>
       </header>
