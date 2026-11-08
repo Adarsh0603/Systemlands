@@ -4,11 +4,11 @@ import Tooltip from "../core/Tooltip";
 import { NEWS, markNewsSeen, newsPath, useUnseenNews, welcomeSeen } from "./news";
 
 // A rolled parchment scroll: the royal dispatch.
-function DispatchIcon() {
+function DispatchIcon({ size = 15 }: { size?: number }) {
   return (
     <svg
-      width={15}
-      height={15}
+      width={size}
+      height={size}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -93,8 +93,9 @@ export default function WhatsNew({ home }: { home: boolean }) {
               </div>
               <h2
                 id="news-title"
-                className="mt-2 text-2xl font-semibold tracking-tight"
+                className="mt-2 flex items-center gap-2.5 font-mono text-[24px] font-bold"
               >
+                <DispatchIcon size={26} />
                 Royal Dispatch
               </h2>
             </div>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useProgress } from "../core/progress";
 import { PHONE, useMedia } from "../core/useMedia";
+import { MapIcon } from "./parts";
 import { PROJECTS } from "./projects";
 import RealmMap from "./RealmMap";
 import { projectStates } from "./shared";
@@ -77,7 +78,10 @@ export default function Home() {
           Conquer each system
         </div>
         <h1 className="mt-3 font-mono text-[24px]">
-          <b>The Realm of Systems</b>
+          <b className="flex items-center gap-2.5">
+            <MapIcon />
+            The Realm of Systems
+          </b>
           <span className="block text-lg leading-snug tracking-tighter text-muted">
             See why systems break at scale, then build ones that don't
           </span>

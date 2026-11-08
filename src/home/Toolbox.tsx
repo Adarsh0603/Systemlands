@@ -5,7 +5,7 @@ import { clearAllBuilds } from "../core/build/saved";
 import { resetProgress, useProgress } from "../core/progress";
 import { resetTips } from "../core/tips";
 import { PLANNED, TOPICS, TRACKS, type TopicEntry } from "../topics/registry";
-import { Credit } from "./parts";
+import { Credit, SwordsIcon } from "./parts";
 import Thumb from "./thumbs";
 import {
   actionLabel,
@@ -49,7 +49,10 @@ export default function Toolbox() {
           MASTER ANY TACTIC
         </div>
         <h1 className="mt-3 font-mono text-[24px]">
-          <b>The Arsenal</b>
+          <b className="flex items-center gap-2.5">
+            <SwordsIcon />
+            The Arsenal
+          </b>
           <span className="block text-lg leading-snug tracking-tighter text-muted">
             From single server to distributed consensus, learn the tactics that
             make systems work at scale
