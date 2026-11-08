@@ -658,7 +658,7 @@ function Builder({
       {shownDiag ? (
         <div className="mt-1 space-y-1">
           <p>{shownDiag.because}</p>
-          <p className="font-medium">{shownDiag.look}</p>
+          {shownDiag.look && <p className="font-medium">{shownDiag.look}</p>}
         </div>
       ) : (
         <p className="mt-1">{problem}</p>

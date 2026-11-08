@@ -164,6 +164,17 @@ const noDupes: Requirement = {
     return { text: d === 0 ? 'all unique' : `${d} repeated`, ok: d === 0 }
   },
 }
+// The first design is about two servers sharing the work. Without them there is
+// nothing to test, so the run stops at once and says what is missing.
+const twoServers: Requirement = {
+  label: 'Servers',
+  says: 'Run on two app servers.',
+  read: (flow) => {
+    const cfg = shortenerOf.get(flow)?.cfg
+    const ok = !!cfg?.balancer && (cfg?.apps.length ?? 0) >= 2
+    return { text: ok ? 'sharing' : 'one serving', ok }
+  },
+}
 const redirectsWork = (limit: number): Requirement => ({
   label: 'Redirects',
   says: `Visitors must land on the long link. No more than ${limit} redirects may be lost or take over 2 seconds.`,
@@ -282,7 +293,7 @@ export const FIRST_DESIGN: BuildTask = {
     { kind: 'app', count: 2 },
   ],
   settings: [SETTINGS[0]],
-  requirements: [noDupes, redirectsWork(3), redirectsFast],
+  requirements: [twoServers, noDupes, redirectsWork(3), redirectsFast],
   assemble: (placed, settings, rng) => assemble(placed, settings, FIRST_PROFILE, rng),
   diagnose(m, raw, settings, flow) {
     const s = shortenerOf.get(flow)
@@ -292,6 +303,8 @@ export const FIRST_DESIGN: BuildTask = {
     const { scheme } = chosen(settings)
     if (s.tally.dupes > 0 && scheme === 'counter') return { because: 'Some links were given a code that was already in use.', look: 'Two servers can ask for a new code at nearly the same moment. What do they agree on?' }
     if (!placed.lb && apps.length > 1) return { because: 'All visitors land on the first server. The others get no traffic.', look: 'What sends each visitor to a server?' }
+    if (apps.length < 2) return { because: 'Only one app server is running.' }
+    if (!placed.lb) return { because: 'Visitors only reach one server.' }
     if (s.redirectsFailed() > 3) return redirectsCause(s)
     return slowWhy(s, m)
   },

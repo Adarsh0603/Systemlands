@@ -111,7 +111,7 @@ export interface Requirement {
 // part of the design to look at, without saying what to put there.
 export interface Diagnosis {
   because: string
-  look: string
+  look?: string
 }
 
 export interface BuildTask {
